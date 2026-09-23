@@ -73,7 +73,7 @@ conversations/{id}    { title, messages: [{role, content, created_at}], created_
 ## 배포
 
 1. GitHub에 푸시한 뒤 Render에서 **Blueprint** 또는 Web Service를 만들고 `render.yaml`을 선택합니다. `OPENAI_API_KEY`, `FIREBASE_SERVICE_ACCOUNT_JSON`, `ALLOWED_ORIGINS=https://<vercel-domain>`을 설정합니다.
-2. Vercel에서 `frontend` 폴더를 프로젝트 루트로 지정하여 배포합니다. 배포 전 `frontend/config.js`의 `API_BASE_URL`을 Render URL로 바꿉니다.
+2. Vercel에서 `frontend` 폴더를 프로젝트 루트로 지정하여 배포하고, Vercel 환경 변수 `API_BASE_URL=https://<render-service>.onrender.com`을 등록합니다. `frontend/api/config.js`가 런타임에 이 값을 브라우저로 제공합니다. 로컬은 `frontend/config.js`를 사용합니다.
 3. Render URL의 `/docs`에서 API를 시험하고, Vercel URL에서 채팅·CRUD·대화 불러오기를 확인합니다.
 
 ## 제출 스크린샷 체크
