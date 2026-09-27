@@ -45,6 +45,7 @@ py -m http.server 5500
 | --- | --- |
 | `OPENAI_API_KEY` | GPT 응답 생성을 위한 OpenAI API 키 |
 | `OPENAI_MODEL` | 선택값, 기본 `gpt-4.1-mini` |
+| `OPENAI_BASE_URL` | 선택값. Codyssey 등 OpenAI 호환 API의 Base URL |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | 서비스 계정 JSON 한 줄 또는 JSON 키 파일의 절대 경로 |
 | `ALLOWED_ORIGINS` | 쉼표로 나눈 허용 프론트엔드 URL |
 | `API_BASE_URL` | 프론트가 호출할 Render API 주소. 현재 `frontend/config.js`에서 설정 |

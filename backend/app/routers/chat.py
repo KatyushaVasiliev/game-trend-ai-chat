@@ -28,14 +28,20 @@ def chat(request: ChatRequest):
     messages = (old or {}).get("messages", [])
     user = ChatMessage(role="user", content=request.message, created_at=datetime.now(timezone.utc)).model_dump(mode="json")
     if os.getenv("OPENAI_API_KEY"):
-        client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-        response = client.responses.create(
+        client_options = {"api_key": os.environ["OPENAI_API_KEY"]}
+        base_url = os.getenv("OPENAI_BASE_URL", "").strip()
+        if base_url:
+            client_options["base_url"] = base_url
+        client = OpenAI(**client_options)
+        response = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
-            instructions=system_prompt(summary),
-            input=[{"role": m["role"], "content": m["content"]} for m in messages[-12:] + [user]],
-            max_output_tokens=350,
+            messages=[
+                {"role": "system", "content": system_prompt(summary)},
+                *[{"role": m["role"], "content": m["content"]} for m in messages[-12:] + [user]],
+            ],
+            max_tokens=350,
         )
-        answer = response.output_text
+        answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
         mode = "openai"
     else:
         answer, mode = demo_answer(request.message, summary), "demo"
