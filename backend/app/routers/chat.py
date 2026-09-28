@@ -17,7 +17,9 @@ def system_prompt(summary):
 
 데이터 요약(관련 질문에만 사용): 기간 {summary.period_start} ~ {summary.period_end}; 관측치 {summary.count}개; 평균 {summary.average}; 최소/최대 {summary.minimum}/{summary.maximum}; 추세 {summary.trend}; 설명 {summary.trend_detail}
 
-데이터를 사용할 때는 제공된 수치 밖의 원인을 사실처럼 단정하지 말고, 데이터 기반 해석임을 분명히 하세요."""
+데이터를 사용할 때는 제공된 수치 밖의 원인을 사실처럼 단정하지 말고, 데이터 기반 해석임을 분명히 하세요.
+
+기본 답변은 3~6개의 짧은 문장 또는 최대 3개의 목록으로 간결하게 작성하세요. 항목은 한 줄씩 나누고, 긴 설명·반복·불필요한 서론은 피하세요. 사용자가 자세한 설명을 요청한 경우에만 길게 답하세요."""
 
 
 def demo_answer(question, summary):
