@@ -39,10 +39,10 @@ def chat(request: ChatRequest):
                 {"role": "system", "content": system_prompt(summary)},
                 *[{"role": m["role"], "content": m["content"]} for m in messages[-12:] + [user]],
             ],
-            # GPT-5 reasoning tokens count toward this limit. 350 can be
-            # exhausted before a visible answer is generated.
-            max_completion_tokens=1000,
-            reasoning_effort="low",
+            # Codyssey's OpenAI-compatible endpoint supports max_tokens
+            # (but not GPT-5's reasoning_effort option). A larger allowance
+            # leaves room for both reasoning and a visible Korean response.
+            max_tokens=1000,
         )
         answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
         mode = "openai"
