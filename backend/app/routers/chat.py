@@ -26,6 +26,19 @@ def demo_answer(question, summary):
     return f"현재 데이터는 {summary.period_start}부터 {summary.period_end}까지 {summary.count}건입니다. 평균은 {summary.average}, 범위는 {summary.minimum}~{summary.maximum}이며 {summary.trend_detail} 질문 ‘{question}’에 대해서는 이 요약을 바탕으로 추가 관측을 함께 확인하는 것이 좋습니다. (OPENAI_API_KEY를 설정하면 GPT 답변으로 전환됩니다.)"
 
 
+def compact_history(messages, max_messages=6, max_chars=7200):
+    """Keep recent context useful without overflowing the provider's context window."""
+    selected = []
+    used = 0
+    for message in reversed(messages[-max_messages:]):
+        content = str(message.get("content", ""))[:1800]
+        if used + len(content) > max_chars:
+            continue
+        selected.append({"role": message["role"], "content": content})
+        used += len(content)
+    return list(reversed(selected))
+
+
 @router.post("")
 def chat(request: ChatRequest):
     summary = make_summary(store.list_data())
@@ -38,19 +51,32 @@ def chat(request: ChatRequest):
         if base_url:
             client_options["base_url"] = base_url
         client = OpenAI(**client_options)
-        response = client.chat.completions.create(
+        prompt = {"role": "system", "content": system_prompt(summary)}
+        request_options = dict(
             model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
-            messages=[
-                {"role": "system", "content": system_prompt(summary)},
-                *[{"role": m["role"], "content": m["content"]} for m in messages[-12:] + [user]],
-            ],
             # Codyssey's OpenAI-compatible endpoint supports max_tokens
             # (but not GPT-5's reasoning_effort option). A larger allowance
             # leaves room for both reasoning and a visible Korean response.
             max_tokens=2048,
         )
-        answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
-        mode = "openai"
+        try:
+            response = client.chat.completions.create(
+                messages=[prompt, *compact_history(messages), {"role": "user", "content": request.message}],
+                **request_options,
+            )
+            answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
+            mode = "openai"
+        except Exception:
+            try:
+                response = client.chat.completions.create(
+                    messages=[prompt, {"role": "user", "content": request.message}],
+                    **request_options,
+                )
+                answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
+                mode = "openai-retry"
+            except Exception:
+                answer = "AI 응답을 잠시 불러오지 못했습니다. 새 대화를 시작하거나 잠시 후 다시 시도해 주세요."
+                mode = "unavailable"
     else:
         answer, mode = demo_answer(request.message, summary), "demo"
     assistant = ChatMessage(role="assistant", content=answer, created_at=datetime.now(timezone.utc)).model_dump(mode="json")
