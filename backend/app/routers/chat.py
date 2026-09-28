@@ -39,7 +39,10 @@ def chat(request: ChatRequest):
                 {"role": "system", "content": system_prompt(summary)},
                 *[{"role": m["role"], "content": m["content"]} for m in messages[-12:] + [user]],
             ],
-            max_tokens=350,
+            # GPT-5 reasoning tokens count toward this limit. 350 can be
+            # exhausted before a visible answer is generated.
+            max_completion_tokens=1000,
+            reasoning_effort="low",
         )
         answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
         mode = "openai"
