@@ -1,6 +1,7 @@
 services:
   - type: web
     name: game-trend-ai-chat-api
+    plan: free
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt
