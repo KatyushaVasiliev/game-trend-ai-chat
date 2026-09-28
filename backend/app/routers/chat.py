@@ -57,14 +57,16 @@ def chat(request: ChatRequest):
             # Codyssey's OpenAI-compatible endpoint supports max_tokens
             # (but not GPT-5's reasoning_effort option). A larger allowance
             # leaves room for both reasoning and a visible Korean response.
-            max_tokens=2048,
+            max_tokens=4096,
         )
         try:
             response = client.chat.completions.create(
                 messages=[prompt, *compact_history(messages), {"role": "user", "content": request.message}],
                 **request_options,
             )
-            answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
+            answer = (response.choices[0].message.content or "").strip()
+            if not answer:
+                raise RuntimeError("Provider returned an empty response body")
             mode = "openai"
         except Exception:
             try:
@@ -72,7 +74,9 @@ def chat(request: ChatRequest):
                     messages=[prompt, {"role": "user", "content": request.message}],
                     **request_options,
                 )
-                answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
+                answer = (response.choices[0].message.content or "").strip()
+                if not answer:
+                    raise RuntimeError("Provider returned an empty response body")
                 mode = "openai-retry"
             except Exception:
                 answer = "AI 응답을 잠시 불러오지 못했습니다. 새 대화를 시작하거나 잠시 후 다시 시도해 주세요."
