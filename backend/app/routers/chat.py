@@ -42,7 +42,7 @@ def chat(request: ChatRequest):
             # Codyssey's OpenAI-compatible endpoint supports max_tokens
             # (but not GPT-5's reasoning_effort option). A larger allowance
             # leaves room for both reasoning and a visible Korean response.
-            max_tokens=1000,
+            max_tokens=2048,
         )
         answer = response.choices[0].message.content or "응답 본문이 비어 있습니다."
         mode = "openai"
